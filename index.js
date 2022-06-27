@@ -21,7 +21,7 @@ app.use(morgan("tiny"));
 
 
 // api call
-app.use("/api/users",require("./routes/users"));
+app.use("/api/user",require("./routes/users"));
 app.use("/api/user/auth",require("./routes/auth"));
 
 app.listen(8000,(err)=>{

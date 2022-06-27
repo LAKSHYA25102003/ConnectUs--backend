@@ -1,7 +1,8 @@
 const jwt=require("jsonwebtoken");
+const User=require("../models/user");
 
 
-const fetchuser=(req,res,next)=>{
+const fetchuser=async(req,res,next)=>{
     const token=req.header('auth-token');
 
     if(!token)
@@ -11,7 +12,10 @@ const fetchuser=(req,res,next)=>{
     }
 
     const data=jwt.verify(token,process.env.TOKEN_SECRET);
-    req.user=data;
+    const userId=data.id;
+    
+    const user=await User.findById(userId);
+    req.user=user;
 
     next();
 

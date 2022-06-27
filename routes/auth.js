@@ -22,7 +22,7 @@ router.post("/register", async (req, res) => {
         else
         {
             const newUser= new User({
-                name:req.body.email,
+                name:req.body.name,
                 email:req.body.email,
                 password:hashedPassword
             });
@@ -58,9 +58,6 @@ router.post("/login",async (req,res)=>{
 
         const tokenData={
             id:user._id,
-            name:user.name,
-            email:user.email,
-            password:user.password
         }
         console.log(process.env.TOKEN_SECRET);
         const token=jwt.sign(tokenData,`${process.env.TOKEN_SECRET}`,{expiresIn:'1h'});
