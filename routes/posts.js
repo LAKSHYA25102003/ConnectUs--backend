@@ -8,7 +8,8 @@ router.post("/", fetchuser, async (req, res) => {
     const newPost = await new Post(req.body);
     try {
         let savedPost = await newPost.save();
-        savedPost = await Post.findByIdAndUpdate(savedPost.id, { userId: req.user.id });
+        await savedPost.updateOne({$set:{userId:req.user.id}});
+        savedPost=await Post.findById(newPost.id);
         res.status(200).json({ success: true, message: "post is created successfully", post: savedPost });
     } catch (err) {
         res.status(500).json({ success: false, error: err });
