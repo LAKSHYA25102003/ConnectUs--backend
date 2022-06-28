@@ -5,7 +5,7 @@ const morgan=require("morgan");
 const dotenv=require("dotenv");
 const bodyParser=require("body-parser");
 
-dotenv.config();
+dotenv.config({path: "./vars/.env"});
 
 const db=require("./config/mongoose");
 
