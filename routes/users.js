@@ -63,7 +63,7 @@ router.get("/get-user-by-id/:id",async (req,res)=>{
         res.status(200).json({success:true,message:"user is fetched successfully",user:other});
 
     }catch(err){
-        res.status(500).json({success:"false",message:"internal server error"});
+        res.status(500).json({success:false,message:"internal server error"});
     }
 })
 
@@ -76,7 +76,7 @@ router.get("/get-user-by-token",fetchuser,async (req,res)=>{
         res.status(200).json({success:true,message:"user is fetched successfully",user:other});
 
     }catch(err){
-        res.status(500).json({success:"false",message:"internal server error"});
+        res.status(500).json({success:false,message:"internal server error"});
     }
 })
 
@@ -101,7 +101,7 @@ router.post("/:id/follow",fetchuser,async(req,res)=>{
             }
         }catch(err)
         {
-            res.status(500).json({success:"false",message:"internal server error"});
+            res.status(500).json({success:false,message:"internal server error"});
             return ;
         }
     }
@@ -134,13 +134,36 @@ router.post("/:id/unfollow",fetchuser,async(req,res)=>{
             }
         }catch(err)
         {
-            res.status(500).json({success:"false",message:"internal server error"});
+            res.status(500).json({success:false,message:"internal server error"});
             return ;
         }
     }
     else
     {
         res.status(403).json({success:false,message:"you can not unfollow your self"});
+        return ;
+    }
+})
+
+
+// get friends
+router.get("/friends/:id",async (req,res)=>{
+    try{
+        const user=await User.findById(req.params.id);
+        const friends=await Promise.all(
+            user.following.map((friend)=>{
+                return User.findById(friend);
+            })
+        )
+        const friendList=[];
+         friends.map((friend)=>{
+            const {_id,name,profilePicture}=friend;
+            friendList.push({_id,name,profilePicture});
+        })
+        res.status(200).json({success:true,friendlist:friendList});
+    }catch(error)
+    {
+        res.status(500).json({success:"false",message:"internal server error"});
         return ;
     }
 })
