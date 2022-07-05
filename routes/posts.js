@@ -58,6 +58,22 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
 })
 
 
+// get users post
+router.get("/profile/:id",async (req,res)=>{
+    try{
+        const posts=await Post.find({userId:req.params.id});
+        res.status(200).json({success:true,posts:posts});
+        return ;
+    }
+    catch(err)
+    {
+        res.status(500).json({success:false,error:err});
+        return ;
+    }
+})
+
+
+
 // likes a post
 router.put("/:id/like",fetchuser,async (req,res)=>{
     const post= await Post.findById(req.params.id);

@@ -55,9 +55,22 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
 
 
 // get user
-router.get("/get-user/:id",async (req,res)=>{
+router.get("/get-user-by-id/:id",async (req,res)=>{
     try{
         const user =await User.findById(req.params.id);
+        // to avoid password from sending
+        const {password,...other}=user._doc;
+        res.status(200).json({success:true,message:"user is fetched successfully",user:other});
+
+    }catch(err){
+        res.status(500).json({success:"false",message:"internal server error"});
+    }
+})
+
+// get user by token
+router.get("/get-user-by-token",fetchuser,async (req,res)=>{
+    try{
+        const user =await User.findById(req.user.id);
         // to avoid password from sending
         const {password,...other}=user._doc;
         res.status(200).json({success:true,message:"user is fetched successfully",user:other});
