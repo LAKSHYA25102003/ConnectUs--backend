@@ -47,8 +47,7 @@ const userSchema=new mongoose.Schema({
         type:String
     },
     relationship:{
-        type:Number,
-        enum:[1,2,3]
+        type:String,
     }
 },{
     timestamps:true

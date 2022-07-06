@@ -38,6 +38,22 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
     }
 })
 
+app.put("/api/upload-profilePicture", upload.single("file"), (req, res) => {
+    try {
+        return res.status(200).json({ success: true, message: "file uploaded successfully" });
+    } catch (error) {
+        console.log(error);
+    }
+})
+
+app.put("/api/upload-coverPicture", upload.single("file"), (req, res) => {
+    try {
+        return res.status(200).json({ success: true, message: "file uploaded successfully" });
+    } catch (error) {
+        console.log(error);
+    }
+})
+
 
 // api call
 app.use("/api/user", require("./routes/users"));

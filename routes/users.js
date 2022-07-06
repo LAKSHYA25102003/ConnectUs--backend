@@ -13,17 +13,17 @@ router.put("/update/:id", fetchuser, async (req, res) => {
                 req.body.password = await bcrypt.hash(req.body.password, salt);
             }
         } catch (err) {
-            res.status(500).json({ success: "false", message: "internal server error" });
+            res.status(500).json({ success: false, message: "internal server error" });
             return;
         }
 
 
         try {
             const user = await User.findByIdAndUpdate(req.user.id, req.body);
-            res.status(200).json({ success: "true", message: "successfully updated" });
+            res.status(200).json({ success: true, message: "successfully updated" });
             return;
         } catch (err) {
-            res.status(500).json({ success: "false", message: "internal server error" });
+            res.status(500).json({ success: false, message: "internal server error" });
             return;
         }
 
@@ -31,6 +31,29 @@ router.put("/update/:id", fetchuser, async (req, res) => {
     else {
         res.status(401).json({ success: "false", message: "you can update only your account!" });
         return;
+    }
+})
+
+
+//update password
+router.put("/reset-password", async (req, res) => {
+    try {
+        const salt = await bcrypt.genSalt(10);
+        req.body.password = await bcrypt.hash(req.body.password, salt);
+        const user = await User.findOne({ email: req.body.email });
+        if(!user)
+        {
+            res.status(404).json({ status:404,success: "false", message: "User does not exist!" });
+        }
+        else{
+            const newUser=await User.findByIdAndUpdate(user._id,req.body);
+            res.status(200).json({ success: "true", message: "successfully updated" });
+        }
+        
+        
+
+    } catch (err) {
+        res.status(500).json({ success: "false", message: "internal server error" });
     }
 })
 
@@ -55,116 +78,105 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
 
 
 // get user
-router.get("/get-user-by-id/:id",async (req,res)=>{
-    try{
-        const user =await User.findById(req.params.id);
+router.get("/get-user-by-id/:id", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
         // to avoid password from sending
-        const {password,...other}=user._doc;
-        res.status(200).json({success:true,message:"user is fetched successfully",user:other});
+        const { password, ...other } = user._doc;
+        res.status(200).json({ success: true, message: "user is fetched successfully", user: other });
 
-    }catch(err){
-        res.status(500).json({success:false,message:"internal server error"});
+    } catch (err) {
+        res.status(500).json({ success: false, message: "internal server error" });
     }
 })
 
 // get user by token
-router.get("/get-user-by-token",fetchuser,async (req,res)=>{
-    try{
-        const user =await User.findById(req.user.id);
+router.get("/get-user-by-token", fetchuser, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
         // to avoid password from sending
-        const {password,...other}=user._doc;
-        res.status(200).json({success:true,message:"user is fetched successfully",user:other});
+        const { password, ...other } = user._doc;
+        res.status(200).json({ success: true, message: "user is fetched successfully", user: other });
 
-    }catch(err){
-        res.status(500).json({success:false,message:"internal server error"});
+    } catch (err) {
+        res.status(500).json({ success: false, message: "internal server error" });
     }
 })
 
 
 // follow a user
-router.post("/:id/follow",fetchuser,async(req,res)=>{
-    if(req.params.id!==req.user.id)
-    {   
-        try{
-            const user=await User.findById(req.params.id);
-            const currUser=await User.findById(req.user.id);
-            if(!user.followers.includes(req.user.id))
-            {
-                await User.findByIdAndUpdate(req.params.id,{$push:{followers:req.user.id}})
-                await User.findByIdAndUpdate(req.user.id,{$push:{following:req.params.id}})
-                res.status(200).json({success:true,message:"user is followed successully"});
+router.post("/:id/follow", fetchuser, async (req, res) => {
+    if (req.params.id !== req.user.id) {
+        try {
+            const user = await User.findById(req.params.id);
+            const currUser = await User.findById(req.user.id);
+            if (!user.followers.includes(req.user.id)) {
+                await User.findByIdAndUpdate(req.params.id, { $push: { followers: req.user.id } })
+                await User.findByIdAndUpdate(req.user.id, { $push: { following: req.params.id } })
+                res.status(200).json({ success: true, message: "user is followed successully" });
             }
-            else
-            {
-                res.status(403).json({success:false,message:"you are already following the user"});
-                return ;
+            else {
+                res.status(403).json({ success: false, message: "you are already following the user" });
+                return;
             }
-        }catch(err)
-        {
-            res.status(500).json({success:false,message:"internal server error"});
-            return ;
+        } catch (err) {
+            res.status(500).json({ success: false, message: "internal server error" });
+            return;
         }
     }
-    else
-    {
-        res.status(403).json({success:false,message:"you can not follow your self"});
-        return ;
+    else {
+        res.status(403).json({ success: false, message: "you can not follow your self" });
+        return;
     }
 })
 
 
 
 // unfollow a user
-router.post("/:id/unfollow",fetchuser,async(req,res)=>{
-    if(req.params.id!==req.user.id)
-    {   
-        try{
-            const user=await User.findById(req.params.id);
-            const currUser=await User.findById(req.user.id);
-            if(user.followers.includes(req.user.id))
-            {
-                await User.findByIdAndUpdate(req.params.id,{$pull:{followers:req.user.id}})
-                await User.findByIdAndUpdate(req.user.id,{$pull:{following:req.params.id}})
-                res.status(200).json({success:true,message:"user is unfollowed successully"});
+router.post("/:id/unfollow", fetchuser, async (req, res) => {
+    if (req.params.id !== req.user.id) {
+        try {
+            const user = await User.findById(req.params.id);
+            const currUser = await User.findById(req.user.id);
+            if (user.followers.includes(req.user.id)) {
+                await User.findByIdAndUpdate(req.params.id, { $pull: { followers: req.user.id } })
+                await User.findByIdAndUpdate(req.user.id, { $pull: { following: req.params.id } })
+                res.status(200).json({ success: true, message: "user is unfollowed successully" });
             }
-            else
-            {
-                res.status(403).json({success:false,message:"you are  unfollowing the user already"});
-                return ;
+            else {
+                res.status(403).json({ success: false, message: "you are  unfollowing the user already" });
+                return;
             }
-        }catch(err)
-        {
-            res.status(500).json({success:false,message:"internal server error"});
-            return ;
+        } catch (err) {
+            res.status(500).json({ success: false, message: "internal server error" });
+            return;
         }
     }
-    else
-    {
-        res.status(403).json({success:false,message:"you can not unfollow your self"});
-        return ;
+    else {
+        res.status(403).json({ success: false, message: "you can not unfollow your self" });
+        return;
     }
 })
 
 
 // get friends
-router.get("/friends/:id",async (req,res)=>{
-    try{
-        const user=await User.findById(req.params.id);
-        const friends=await Promise.all(
-            user.following.map((friend)=>{
+router.get("/friends/:id", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        const friends = await Promise.all(
+            user.following.map((friend) => {
                 return User.findById(friend);
             })
         )
-        const friendList=[];
-         friends.map((friend)=>{
-            const {_id,name,profilePicture}=friend;
-            friendList.push({_id,name,profilePicture});
+        const friendList = [];
+        friends.map((friend) => {
+            const { _id, name, profilePicture } = friend;
+            friendList.push({ _id, name, profilePicture });
         })
-        res.status(200).json({success:true,friendlist:friendList});
-    }catch(error)
-    {
-        res.status(500).json({success:"false",message:"internal server error"});
-        return ;
+        res.status(200).json({ success: true, friendlist: friendList });
+    } catch (error) {
+        res.status(500).json({ success: "false", message: "internal server error" });
+        return;
     }
 })
 
