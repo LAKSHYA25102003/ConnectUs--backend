@@ -59,6 +59,8 @@ app.put("/api/upload-coverPicture", upload.single("file"), (req, res) => {
 app.use("/api/user", require("./routes/users"));
 app.use("/api/user/auth", require("./routes/auth"));
 app.use("/api/user/post", require("./routes/posts"));
+app.use("/api/conversation",require("./routes/conversations"));
+app.use("/api/message",require("./routes/messages"));
 
 app.listen(8000, (err) => {
     if (err) {
