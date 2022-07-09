@@ -3,9 +3,7 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt=require("jsonwebtoken")
 
-
 // register
-
 
 router.post("/register", async (req, res) => {
     try {
@@ -62,7 +60,7 @@ router.post("/login",async (req,res)=>{
             id:user._id,
         }
         console.log(process.env.TOKEN_SECRET);
-        const token=jwt.sign(tokenData,`${process.env.TOKEN_SECRET}`,{expiresIn:'4h'});
+        const token=jwt.sign(tokenData,`${process.env.TOKEN_SECRET}`);
         res.status(200).json({success:true,token:token});
 
     }catch(error){

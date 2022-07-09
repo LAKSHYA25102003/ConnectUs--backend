@@ -8,7 +8,7 @@ const messageSchema=new mongoose.Schema({
         type:String
     },
     sender:{
-        Type:String
+        type:String
     }
 },{timestamps:true})
 
