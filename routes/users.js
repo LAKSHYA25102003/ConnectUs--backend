@@ -4,7 +4,6 @@ const router = require("express").Router();
 const User = require("../models/user");
 
 // upate the user
-
 router.put("/update/:id", fetchuser, async (req, res) => {
     if (req.user.id === req.params.id || req.user.isAdmin) {
         try {
@@ -16,8 +15,6 @@ router.put("/update/:id", fetchuser, async (req, res) => {
             res.status(500).json({ success: false, message: "internal server error" });
             return;
         }
-
-
         try {
             const user = await User.findByIdAndUpdate(req.user.id, req.body);
             res.status(200).json({ success: true, message: "successfully updated" });
@@ -26,7 +23,6 @@ router.put("/update/:id", fetchuser, async (req, res) => {
             res.status(500).json({ success: false, message: "internal server error" });
             return;
         }
-
     }
     else {
         res.status(401).json({ success: "false", message: "you can update only your account!" });
@@ -34,24 +30,19 @@ router.put("/update/:id", fetchuser, async (req, res) => {
     }
 })
 
-
 //update password
 router.put("/reset-password", async (req, res) => {
     try {
         const salt = await bcrypt.genSalt(10);
         req.body.password = await bcrypt.hash(req.body.password, salt);
         const user = await User.findOne({ email: req.body.email });
-        if(!user)
-        {
-            res.status(404).json({ status:404,success: "false", message: "User does not exist!" });
+        if (!user) {
+            res.status(404).json({ status: 404, success: "false", message: "User does not exist!" });
         }
-        else{
-            const newUser=await User.findByIdAndUpdate(user._id,req.body);
+        else {
+            const newUser = await User.findByIdAndUpdate(user._id, req.body);
             res.status(200).json({ success: "true", message: "successfully updated" });
         }
-        
-        
-
     } catch (err) {
         res.status(500).json({ success: "false", message: "internal server error" });
     }
@@ -68,7 +59,6 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
         } catch (err) {
             res.status(500).json({ success: "false", message: "internal server error" });
         }
-
     }
     else {
         res.status(401).json({ success: "false", message: "you can delete only your account!" });
@@ -84,7 +74,6 @@ router.get("/get-user-by-id/:id", async (req, res) => {
         // to avoid password from sending
         const { password, ...other } = user._doc;
         res.status(200).json({ success: true, message: "user is fetched successfully", user: other });
-
     } catch (err) {
         res.status(500).json({ success: false, message: "internal server error" });
     }
@@ -175,6 +164,21 @@ router.get("/friends/:id", async (req, res) => {
         })
         res.status(200).json({ success: true, friendlist: friendList });
     } catch (error) {
+        res.status(500).json({ success: "false", message: "internal server error" });
+        return;
+    }
+})
+
+
+//search the users
+router.get("/search-user/:name",fetchuser,async (req,res)=>{
+    try{
+        const users=await User.find({name:req.params.name});
+        res.status(200).json({success:true,message:"Users are fetched successfully",users:users});
+        return ;
+    }
+    catch(error)
+    {
         res.status(500).json({ success: "false", message: "internal server error" });
         return;
     }
