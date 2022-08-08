@@ -4,9 +4,10 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
-var cors = require('cors')
+var cors = require('cors');
 const multer = require("multer");
-app.use(cors())
+app.use(cors());
+
 const path = require("path");
 
 dotenv.config({ path: "./vars/.env" });
@@ -19,7 +20,6 @@ app.use("/images", express.static(path.join(__dirname, "./public/images")));
 app.use(bodyParser.json());
 app.use(helmet());
 app.use(morgan("tiny"));
-
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
