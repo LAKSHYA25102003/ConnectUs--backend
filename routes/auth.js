@@ -17,7 +17,8 @@ router.post("/register", async (req, res) => {
 
         if(user)
         {
-            res.status(404).json({success:false,message:"email is already in use"});
+            res.status(404).json({status:404,success:false,message:"email is already in use"});
+            return ;
         }
         else
         {
@@ -29,6 +30,7 @@ router.post("/register", async (req, res) => {
 
             newUser.save();
             res.status(200).json({success:true,message:"user is created successfully"});
+            return ;
         }
 
 
@@ -65,7 +67,7 @@ router.post("/login",async (req,res)=>{
 
     }catch(error){
         console.log(error);
-       res.status(500).json({success:false,error:error});
+       res.status(500).json({success:false,error:error,status:500});
     }
 })
 

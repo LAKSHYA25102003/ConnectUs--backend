@@ -37,14 +37,14 @@ router.put("/reset-password", async (req, res) => {
         req.body.password = await bcrypt.hash(req.body.password, salt);
         const user = await User.findOne({ email: req.body.email });
         if (!user) {
-            res.status(404).json({ status: 404, success: "false", message: "User does not exist!" });
+            res.status(404).json({ status: 404, success:false, message: "User does not exist!" });
         }
         else {
             const newUser = await User.findByIdAndUpdate(user._id, req.body);
-            res.status(200).json({ success: "true", message: "successfully updated" });
+            res.status(200).json({ success: true, message: "successfully updated" });
         }
     } catch (err) {
-        res.status(500).json({ success: "false", message: "internal server error" });
+        res.status(500).json({ success: false, message: "internal server error" });
     }
 })
 
@@ -54,14 +54,14 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
     if (req.user.id === req.params.id || req.user.isAdmin) {
         try {
             const user = await User.findByIdAndDelete(req.user.id);
-            res.status(200).json({ success: "true", message: "successfully deleted" });
+            res.status(200).json({ success: true, message: "successfully deleted" });
             return;
         } catch (err) {
-            res.status(500).json({ success: "false", message: "internal server error" });
+            res.status(500).json({ success: false, message: "internal server error" });
         }
     }
     else {
-        res.status(401).json({ success: "false", message: "you can delete only your account!" });
+        res.status(401).json({ success: false, message: "you can delete only your account!" });
         return;
     }
 })
@@ -164,7 +164,7 @@ router.get("/friends/:id", async (req, res) => {
         })
         res.status(200).json({ success: true, friendlist: friendList });
     } catch (error) {
-        res.status(500).json({ success: "false", message: "internal server error" });
+        res.status(500).json({ success: false, message: "internal server error" });
         return;
     }
 })
@@ -179,7 +179,7 @@ router.get("/search-user/:name",fetchuser,async (req,res)=>{
     }
     catch(error)
     {
-        res.status(500).json({ success: "false", message: "internal server error" });
+        res.status(500).json({ success: false, message: "internal server error" });
         return;
     }
 })
