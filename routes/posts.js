@@ -111,6 +111,7 @@ router.get("/:id",async (req,res)=>{
     }
 })
 
+
 // get all post
 router.get("/timeline/all",fetchuser,async (req,res)=>{
     try{

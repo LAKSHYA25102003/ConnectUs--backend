@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Conversation = require("../models/conversation.js");
-const fetchUser = require("../middleware/fetchuser")
+const fetchUser = require("../middleware/fetchuser");
 
 // creating the conversation
 router.post("/", fetchUser, async (req, res) => {

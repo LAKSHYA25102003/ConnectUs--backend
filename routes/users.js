@@ -5,7 +5,7 @@ const User = require("../models/user");
 
 // upate the user
 router.put("/update/:id", fetchuser, async (req, res) => {
-    if (req.user.id === req.params.id || req.user.isAdmin) {
+    if (req.user.id === req.params.id ) {
         try {
             if (req.body.password) {
                 const salt = await bcrypt.genSalt(10);

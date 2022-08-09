@@ -13,7 +13,6 @@ const fetchuser = async (req, res, next) => {
     try {
         const data = jwt.verify(token, process.env.TOKEN_SECRET);
         const userId = data.id;
-
         const user = await User.findById(userId);
         req.user = user;
         next();
