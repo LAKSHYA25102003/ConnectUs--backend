@@ -42,7 +42,7 @@ router.post("/createUser",async (req,res)=>{
             text:req.body.name,
             html:`<h3>Hii ${req.body.name},</h3>
                     <div>Click on the given link to create the password. If you have not started it to create the password, then ignore it.</div>
-                    <a href='http://localhost:3000/setPassword/${token}'><h3> Click here</h3></a>
+                    <a href='https://connectus.vercel.app/setPassword/${token}'><h3> Click here</h3></a>
                     <h3>Best Regards</h3> 
                     <h4>ConnectUs Team</h4>`
         }
@@ -130,7 +130,7 @@ router.post("/password-generate-link",async (req, res) => {
             text:user.name,
             html:`<h3>Hii ${user.name},</h3>
                     <div>Click on the given link to reset the password. If you have not started it to reset the password, then ignore it.</div>
-                    <a href='http://localhost:3000/reset-password/${token}'><h3> Click here</h3></a>
+                    <a href='https://connectus.vercel.app/reset-password/${token}'><h3> Click here</h3></a>
                     <h3>Best Regards</h3> 
                     <h4>ConnectUs Team</h4>`
         }
