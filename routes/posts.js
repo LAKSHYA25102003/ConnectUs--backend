@@ -1,15 +1,17 @@
 const router = require("express").Router();
 const Post = require("../models/post");
 const fetchuser = require("../middleware/fetchuser");
-const User=require("../models/user");
+const User = require("../models/user");
+const Comments = require("../models/comments");
+
 
 // create a post
 router.post("/", fetchuser, async (req, res) => {
     const newPost = await new Post(req.body);
     try {
         let savedPost = await newPost.save();
-        await savedPost.updateOne({$set:{userId:req.user.id}});
-        savedPost=await Post.findById(newPost.id);
+        await savedPost.updateOne({ $set: { userId: req.user.id } });
+        savedPost = await Post.findById(newPost.id);
         res.status(200).json({ success: true, message: "post is created successfully", post: savedPost });
     } catch (err) {
         res.status(500).json({ success: false, error: err });
@@ -22,20 +24,20 @@ router.put("/update/:id", fetchuser, async (req, res) => {
     const post = await Post.findById(req.params.id);
     try {
         if (post.userId === req.user.id) {
-            await post.updateOne({$set:req.body});
-            res.status(200).json({success:true,message:"post is updated successfully"});
-            return ;
+            await post.updateOne({ $set: req.body });
+            res.status(200).json({ success: true, message: "post is updated successfully" });
+            return;
         }
         else {
             res.status(403).json({ success: false, message: "you can not update post of other people" });
             return;
         }
-    }catch(err)
-    {
-        res.status(500).json({success:false,error:err,message:"post is not found"})
-        return ;
+    } catch (err) {
+        res.status(500).json({ success: false, error: err, message: "post is not found" })
+        return;
     }
 })
+
 
 // delete a post
 router.delete("/delete/:id", fetchuser, async (req, res) => {
@@ -43,92 +45,132 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
     try {
         if (post.userId === req.user.id) {
             await post.deleteOne();
-            res.status(200).json({success:true,message:"post is deleted successfully"});
-            return ;
+            res.status(200).json({ success: true, message: "post is deleted successfully" });
+            return;
         }
         else {
             res.status(403).json({ success: false, message: "you can not delete post of other people" });
             return;
         }
-    }catch(err)
-    {
-        res.status(500).json({success:false,error:err,message:"post is not found"})
-        return ;
+    } catch (err) {
+        res.status(500).json({ success: false, error: err, message: "post is not found" })
+        return;
     }
 })
 
 
 // get users post
-router.get("/profile/:id",async (req,res)=>{
-    try{
-        const posts=await Post.find({userId:req.params.id});
-        res.status(200).json({success:true,posts:posts});
-        return ;
+router.get("/profile/:id", async (req, res) => {
+    try {
+        const posts = await Post.find({ userId: req.params.id });
+        res.status(200).json({ success: true, posts: posts });
+        return;
     }
-    catch(err)
-    {
-        res.status(500).json({success:false,error:err});
-        return ;
+    catch (err) {
+        res.status(500).json({ success: false, error: err });
+        return;
     }
 })
 
 
-
 // likes a post
-router.put("/:id/like",fetchuser,async (req,res)=>{
-    const post= await Post.findById(req.params.id);
-    try{
-        if(!post.likes.includes(req.user.id))
-        {
-            await post.updateOne({$push:{likes:req.user.id}});
-            res.status(200).json({success:true,message:"post is liked successfully"});
-            return ;
+router.put("/:id/like", fetchuser, async (req, res) => {
+    const post = await Post.findById(req.params.id);
+    try {
+        if (!post.likes.includes(req.user.id)) {
+            await post.updateOne({ $push: { likes: req.user.id } });
+            res.status(200).json({ success: true, message: "post is liked successfully" });
+            return;
         }
-        else
-        {
-            await post.updateOne({$pull:{likes:req.user.id}});
-            res.status(200).json({success:true,message:"post is disliked successfully"});
-            return ;
+        else {
+            await post.updateOne({ $pull: { likes: req.user.id } });
+            res.status(200).json({ success: true, message: "post is disliked successfully" });
+            return;
         }
     }
-    catch(err){
-        res.status(500).json({success:false,error:err});
+    catch (err) {
+        res.status(500).json({ success: false, error: err });
     }
 })
 
 
 // get a post
-router.get("/:id",async (req,res)=>{
-    try{
-        const post=await Post.findById(req.params.id);
-        res.status(200).json({success:true,post:post});
-        return ;
+router.get("/:id", async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        res.status(200).json({ success: true, post: post });
+        return;
     }
-    catch(err)
-    {
-        res.status(500).json({success:false,error:err});
-        return ;
+    catch (err) {
+        res.status(500).json({ success: false, error: err });
+        return;
     }
 })
 
 
 // get all post
-router.get("/timeline/all",fetchuser,async (req,res)=>{
-    try{
-        const currUser=await User.findById(req.user.id);
-        const userPosts=await Post.find({userId:req.user.id});
-        const friendsPosts=await Promise.all(
-            currUser.following.map((friendId)=>{
-                return Post.find({userId:friendId});
+router.get("/timeline/all", fetchuser, async (req, res) => {
+    try {
+        const currUser = await User.findById(req.user.id);
+        const userPosts = await Post.find({ userId: req.user.id });
+        const friendsPosts = await Promise.all(
+            currUser.following.map((friendId) => {
+                return Post.find({ userId: friendId });
             })
         )
-        res.status(200).json({success:true,posts:userPosts.concat(...friendsPosts)});
-        return ;
+        res.status(200).json({ success: true, posts: userPosts.concat(...friendsPosts) });
+        return;
     }
-    catch(err)
+    catch (err) {
+        res.status(500).json({ success: false, error: err });
+        return;
+    }
+})
+
+
+// get comments
+router.get("/comments/:postId",async (req, res) => {
+    try {
+        const {postId} = req.params;
+        let comments = await Comments.find({post:postId}).populate("user");
+        res.status(200).json({comments:comments});
+    }
+    catch (error) {
+        res.status(500).json({ success: false, error: err });
+        return;
+    }
+})
+
+// add comments
+router.post("/comments/:postId",async(req,res)=>{
+    try{
+        const {postId} = req.params;
+        const {text,userId} = req.body;
+        const comment = new Comments({
+            text:text,
+            user:userId,
+            post:postId
+        });
+        const savedComment=await comment.save();
+        const saved=await Comments.findById(savedComment._id).populate("user")
+        res.status(200).json({comment:saved});
+    }catch(error)
     {
-        res.status(500).json({success:false,error:err});
-        return ;
+        res.status(500).json({ success: false, error: err });
+        return;
+    }
+})
+
+// delete comment
+router.delete("/comments/:commentId",async(req,res)=>{
+    try{
+        const {commentId} = req.params;
+        await Comments.findByIdAndDelete(commentId);
+        res.status(200).json({success:true,message:"deleted successfully"})
+    }catch(error)
+    {
+        res.status(500).json({ success: false, error: err });
+        return;
     }
 })
 
