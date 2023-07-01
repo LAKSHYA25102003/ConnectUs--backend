@@ -18,12 +18,16 @@ const userSchema=new mongoose.Schema({
         min:6,
     },
     followers:{
-        type:Array,
-        default:[]
+        type:[{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User"
+        }]
     },
     following:{
-        type:Array,
-        default:[]
+        type:[{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User"
+        }]
     },
     isAdmin:{
         type:Boolean,

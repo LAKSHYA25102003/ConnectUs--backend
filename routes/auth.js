@@ -42,7 +42,11 @@ router.post("/register", async (req, res) => {
 // login
 router.post("/login",async (req,res)=>{
     try{
-        const user=await User.findOne({email:req.body.email});
+        const user=await User.findOne({email:req.body.email}).populate({
+            path: "followers",
+        }).populate({
+            path: "following",
+        });
         if(!user)
         {
             res.status(404).json({success:false,message:"user not found"});
@@ -52,7 +56,7 @@ router.post("/login",async (req,res)=>{
         const validPassowrd=await bcrypt.compare(req.body.password,user.password);
         if(!validPassowrd)
         {
-            res.status(400).json({success:false,message:"incorrect credentials"});
+            res.status(400).json({success:false,message:"Incorrect credentials"});
             return ;
         }
 
@@ -60,7 +64,7 @@ router.post("/login",async (req,res)=>{
             id:user._id,
         }
         const token=jwt.sign(tokenData,`${process.env.TOKEN_SECRET}`);
-        res.status(200).json({success:true,token:token});
+        res.status(200).json({success:true,token:token,user});
 
     }catch(error){
         console.log(error);

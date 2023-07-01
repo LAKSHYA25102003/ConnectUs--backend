@@ -62,7 +62,15 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
 // get users post
 router.get("/profile/:id", async (req, res) => {
     try {
-        const posts = await Post.find({ userId: req.params.id });
+        const posts = await Post.find({ userId: req.params.id }).populate({
+            path: "comments",
+            populate: [
+                {
+                    path: "user",
+                },
+            ],
+            options: { sort: { createdAt: -1 } },
+        })
         res.status(200).json({ success: true, posts: posts });
         return;
     }
@@ -97,7 +105,16 @@ router.put("/:id/like", fetchuser, async (req, res) => {
 // get a post
 router.get("/:id", async (req, res) => {
     try {
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.id).populate({
+            path: "comments",
+            populate: [
+                {
+                    path: "user",
+                },
+                
+            ],
+            options: { sort: { createdAt: -1 } },
+        })
         res.status(200).json({ success: true, post: post });
         return;
     }
@@ -112,10 +129,25 @@ router.get("/:id", async (req, res) => {
 router.get("/timeline/all", fetchuser, async (req, res) => {
     try {
         const currUser = await User.findById(req.user.id);
-        const userPosts = await Post.find({ userId: req.user.id });
+        const userPosts = await Post.find({ userId: req.user.id }).populate({
+            path: "comments",
+            populate: [
+                {
+                    path: "user",
+                },
+            ],
+        })
         const friendsPosts = await Promise.all(
             currUser.following.map((friendId) => {
-                return Post.find({ userId: friendId });
+                return  Post.find({ userId: friendId }).populate({
+                    path: "comments",
+                    populate: [
+                        {
+                            path: "user",
+                        },
+                    ],
+                    options: { sort: { createdAt: -1 } },
+                });
             })
         )
         res.status(200).json({ success: true, posts: userPosts.concat(...friendsPosts) });
@@ -129,11 +161,11 @@ router.get("/timeline/all", fetchuser, async (req, res) => {
 
 
 // get comments
-router.get("/comments/:postId",async (req, res) => {
+router.get("/comments/:postId", async (req, res) => {
     try {
-        const {postId} = req.params;
-        let comments = await Comments.find({post:postId}).populate("user");
-        res.status(200).json({comments:comments});
+        const { postId } = req.params;
+        let comments = await Comments.find({ post: postId }).populate("user");
+        res.status(200).json({ comments: comments, success: true });
     }
     catch (error) {
         res.status(500).json({ success: false, error: err });
@@ -142,33 +174,44 @@ router.get("/comments/:postId",async (req, res) => {
 })
 
 // add comments
-router.post("/comments/:postId",async(req,res)=>{
-    try{
-        const {postId} = req.params;
-        const {text,userId} = req.body;
+router.post("/comments/:postId", async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const { text, userId } = req.body;
+        if (text.trim() === '') return;
         const comment = new Comments({
-            text:text,
-            user:userId,
-            post:postId
+            text: text,
+            user: userId,
+            post: postId
         });
-        const savedComment=await comment.save();
-        const saved=await Comments.findById(savedComment._id).populate("user")
-        res.status(200).json({comment:saved});
-    }catch(error)
-    {
+        const savedComment = await comment.save();
+        let post = await Post.findById(postId);
+        const saved = await Comments.findById(savedComment._id).populate("user")
+        post.comments.push(saved._id);
+        await post.save();
+        res.status(200).json({ comment: saved, success: true });
+    } catch (error) {
         res.status(500).json({ success: false, error: err });
         return;
     }
 })
 
 // delete comment
-router.delete("/comments/:commentId",async(req,res)=>{
-    try{
-        const {commentId} = req.params;
+router.delete("/comments/:commentId", async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const comment = await Comments.findById(commentId);
         await Comments.findByIdAndDelete(commentId);
-        res.status(200).json({success:true,message:"deleted successfully"})
-    }catch(error)
-    {
+        let post = await Comments.findById(comment.post);
+        for (let i = 0; i < post.comments.length; i++) {
+            if (post.comments[i] === comment.post) {
+                post.splice(i, 1);
+                break;
+            }
+        }
+        await post.save();
+        res.status(200).json({ success: true, message: "deleted successfully" })
+    } catch (error) {
         res.status(500).json({ success: false, error: err });
         return;
     }
