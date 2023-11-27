@@ -3,7 +3,7 @@ const fetchuser = require("../middleware/fetchuser");
 const router = require("express").Router();
 const User = require("../models/user");
 
-// upate the user
+// update the user
 router.put("/update/:id", fetchuser, async (req, res) => {
   if (req.user.id === req.params.id) {
     try {
@@ -19,7 +19,20 @@ router.put("/update/:id", fetchuser, async (req, res) => {
     }
     try {
       const user = await User.findByIdAndUpdate(req.user.id, req.body);
-      res.status(200).json({ success: true, message: "successfully updated" });
+      const savedUser = await User.findById(req.user.id)
+        .populate({
+          path: "followers",
+        })
+        .populate({
+          path: "following",
+        });
+      res
+        .status(200)
+        .json({
+          success: true,
+          message: "successfully updated",
+          user: savedUser,
+        });
       return;
     } catch (err) {
       res
